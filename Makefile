@@ -1,7 +1,7 @@
 CC = g++
 CXX = g++
 
-CXXFLAGS = -Iinclude -I/home/ugoc/include 
+CXXFLAGS = -Iinclude -I../libfeature/include -I../ugoc_utility/include
 LDFLAG = -L../ugoc_utility/lib/$(MACHINE)
 
 MACHINE = $(shell uname -m)
