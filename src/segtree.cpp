@@ -40,12 +40,8 @@ void SegTree::Free() {/*{{{*/
   child_array_size = 0;
 }/*}}}*/
 
-void SegTree::Load_segtree(char fname[]) {/*{{{*/
-  FILE *fd = FOPEN(fname,"r");
-  size_t ret;
-  /* num_node, non_leaf, num_leaf, child */
-  ret = fread(&num_node,sizeInt,1,fd);
-  assert(ret == 1);
+void SegTree::Reallocate(int n_node) {/*{{{*/
+  num_node = n_node;
   num_leaf = (num_node + 1) / 2;
   non_leaf = num_node - num_leaf;
   mem_op<int>::reallocate_2d_array(&child, non_leaf, 2,
@@ -64,6 +60,16 @@ void SegTree::Load_segtree(char fname[]) {/*{{{*/
   }
   end_t = start_t + non_leaf;
   parent = end_t + non_leaf;
+}/*}}}*/
+
+void SegTree::Load_segtree(char fname[]) {/*{{{*/
+  FILE *fd = FOPEN(fname,"r");
+  size_t ret;
+  int n_node;
+  /* num_node, non_leaf, num_leaf, child */
+  ret = fread(&n_node,sizeInt,1,fd);
+  assert(ret == 1);
+  Reallocate(n_node);
 
   ret = fread(start_t, sizeInt, non_leaf, fd);
   assert(ret == static_cast<unsigned>(non_leaf));
@@ -81,6 +87,10 @@ void SegTree::Load_segtree(char fname[]) {/*{{{*/
   assert(ret == 1);
   fclose(fd);
 }/*}}}*/
+
+void SegTree::ConstructTree(const Feature& feat) {
+  Reallocate(2 * feat.LT() - 1);
+}
 
 void SegTree::DumpData() const {/*{{{*/
   printf("Parent: \n");

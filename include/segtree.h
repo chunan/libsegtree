@@ -2,6 +2,7 @@
 #define __SEGTREE_H__
 
 #include "ugoc_utility.h"
+#include "feature.h"
 
 class SegTree{
 	public:
@@ -11,6 +12,9 @@ class SegTree{
 	void Init();
 	void Free();
 	void Load_segtree(char fname[]);
+  void Save_segtree(string fname);
+  // TODO: not implemented yet
+  void ConstructTree(const Feature& feat);
   /* mutators */
 	void SetHBsegTh(const double th) { h_bseg_th = th; }
   /* accessors */
@@ -28,6 +32,7 @@ class SegTree{
 	void DumpData() const;
 
   private:
+  void Reallocate(int n_node);
 	// Data
 	int *start_t;    // start_t[non_leaf]
 	int *end_t;      // end_t[non_leaf]
@@ -39,13 +44,24 @@ class SegTree{
 	float h_bseg_th;
 	float merge_std;
 
-	int node_size;
-  int non_leaf_size;
-
 	int num_node;
 	int non_leaf;
-	int num_leaf;
-  int num_child;
+	int num_leaf; // number of frames
+
+  /*
+   * node_size:
+   *   record the size of start_t, end_t, parent
+   * non_leaf_size, num_child, child_array_size:
+   *   record the child 2d array size
+   *   (non_leaf_size * num_child)  <= child_array_size
+   *
+   * They are used to record actural memory size because SegTree
+   * allows to be reloaded. See SegTree::Load_segtree() for detail.
+   */
+	int node_size;
+  int non_leaf_size;
+  int num_child; // 2
 	int child_array_size;
+
 };
 #endif
