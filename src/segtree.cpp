@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <cassert>
+#include <list>
+#include <cmath>
 #include "segtree.h"
 
 const int sizeInt = sizeof(int);
@@ -12,8 +14,7 @@ void SegTree::Init() {/*{{{*/
   parent    = NULL;
   child     = NULL;
   merge_loss  = NULL;
-  bseg_th   = 0.0;
-  h_bseg_th = 0.0;
+  merge_mean = 0.0;
   merge_std = 0.0;
   num_node  = 0;
   node_size  = 0;
@@ -30,8 +31,7 @@ void SegTree::Free() {/*{{{*/
   }
   mem_op<int>::delete_2d_array(&child);
   Free_1d_array(merge_loss);
-  bseg_th   = 0.0;
-  h_bseg_th = 0.0;
+  merge_mean = 0.0;
   merge_std = 0.0;
   node_size  = 0;
   non_leaf  = 0;
@@ -62,8 +62,8 @@ void SegTree::Reallocate(int n_node) {/*{{{*/
   parent = end_t + non_leaf;
 }/*}}}*/
 
-void SegTree::Load_segtree(char fname[]) {/*{{{*/
-  FILE *fd = FOPEN(fname,"r");
+void SegTree::Load_segtree(string fname) {/*{{{*/
+  FILE *fd = FOPEN(fname.c_str(),"r");
   size_t ret;
   int n_node;
   /* num_node, non_leaf, num_leaf, child */
@@ -81,11 +81,40 @@ void SegTree::Load_segtree(char fname[]) {/*{{{*/
   assert(ret == 2 * static_cast<unsigned>(non_leaf));
   ret = fread(merge_loss, sizeFloat, non_leaf, fd);
   assert(ret == static_cast<unsigned>(non_leaf));
+  int bseg_th;
   ret = fread(&bseg_th, sizeFloat, 1, fd);
   assert(ret == 1);
   ret = fread(&merge_std, sizeFloat, 1, fd);
   assert(ret == 1);
   fclose(fd);
+
+  //cout << "file std = " << merge_std << endl;
+
+  /* Calculate Mean & Std */
+  double sum = 0.0;
+  double sqr_sum = 0.0;
+  for (int i = 0; i < non_leaf; ++i) {
+    sum += merge_loss[i];
+    sqr_sum += merge_loss[i] * merge_loss[i];
+  }
+  merge_mean = sum / non_leaf;
+  merge_std = sqrt(sqr_sum / non_leaf - merge_mean * merge_mean);
+
+  int n_merge = non_leaf;
+  double cutoff = merge_mean + 10.0 * merge_std;
+  for (int i = non_leaf - 1; i >= 0; --i) {
+    if (merge_loss[i] > cutoff) {
+      n_merge--;
+      sum -= merge_loss[i];
+      sqr_sum -= merge_loss[i] * merge_loss[i];
+    }
+  }
+  merge_mean = sum / n_merge;
+  merge_std = sqrt(sqr_sum / n_merge - merge_mean * merge_mean);
+
+  //cout << "new std  = " << merge_std << endl;
+
+
 }/*}}}*/
 
 void SegTree::ConstructTree(const Feature& feat) {
@@ -137,3 +166,20 @@ float SegTree::MergeLoss(int seg_idx) const {/*{{{*/
   assert(seg_idx >= 0 && seg_idx < num_node);
   return (seg_idx < num_leaf) ? 0.0 : merge_loss[seg_idx - num_leaf];
 }/*}}}*/
+
+void SegTree::GetBasicSeg(vector<int>* index, float threshold) {
+  index->clear();
+  std::list<int> nodes_to_visit;
+  nodes_to_visit.push_front(num_node - 1);
+
+  while (!nodes_to_visit.empty()) {
+    int visiting = nodes_to_visit.front();
+    nodes_to_visit.pop_front();
+    if (MergeLoss(visiting) <= threshold) {
+      index->push_back(visiting);
+    } else {
+      nodes_to_visit.push_front(child[visiting - num_leaf][1]);
+      nodes_to_visit.push_front(child[visiting - num_leaf][0]);
+    }
+  }
+}
