@@ -135,6 +135,13 @@ void SegTree::DumpData() const {/*{{{*/
 }/*}}}*/
 
 int SegTree::StartT(int seg_idx) const {/*{{{*/
+  if (seg_idx < 0) {
+    cerr << "SegTree::StartT(" << seg_idx << "): out of bound\n";
+  }
+  if (seg_idx >= num_node) {
+    cerr << "SegTree::StartT(" << seg_idx << "): out of bound, num_node = "
+        << num_node << "\n";
+  }
   assert(seg_idx >= 0 && seg_idx < num_node);
   if (seg_idx < num_leaf) {
     return seg_idx;
@@ -144,6 +151,13 @@ int SegTree::StartT(int seg_idx) const {/*{{{*/
 }/*}}}*/
 
 int SegTree::EndT(int seg_idx) const {/*{{{*/
+  if (seg_idx < 0) {
+    cerr << "SegTree::StartT(" << seg_idx << "): out of bound\n";
+  }
+  if (seg_idx >= num_node) {
+    cerr << "SegTree::StartT(" << seg_idx << "): out of bound, num_node = "
+        << num_node << "\n";
+  }
   assert(seg_idx >= 0 && seg_idx < num_node);
   if (seg_idx < num_leaf) {
     return seg_idx;
