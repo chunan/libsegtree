@@ -3,9 +3,9 @@
 
 #include "ugoc_utility.h"
 #include "feature.h"
-#include <boost/heap/fibonacci_heap.hpp>
+#include <boost/heap/binomial_heap.hpp>
 
-using boost::heap::fibonacci_heap;
+using boost::heap::binomial_heap;
 using boost::heap::compare;
 
 struct MergeOp {
@@ -19,7 +19,7 @@ struct MergeOp {
   int lchild, rchild;
   float loss;
   float lm2; /* (length * ||mean|| ^ 2) of newly created segment */
-  fibonacci_heap<MergeOp, compare<GreaterLoss> >::handle_type lmerge, rmerge;
+  binomial_heap<MergeOp, compare<GreaterLoss> >::handle_type lmerge, rmerge;
 };
 
 

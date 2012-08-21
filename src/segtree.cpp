@@ -123,7 +123,7 @@ void SegTree::Save_segtree(string fname) {/*{{{*/
 
 
 
-typedef fibonacci_heap<MergeOp, compare<MergeOp::GreaterLoss> > MergeOpHeap_t;
+typedef binomial_heap<MergeOp, compare<MergeOp::GreaterLoss> > MergeOpHeap_t;
 
 float AddThenSquare(float a, float b) { return (a + b) * (a + b); }
 
@@ -161,7 +161,7 @@ void SegTree::ConstructTree(const DenseFeature& feat) {/*{{{*/
   Reallocate(2 * feat.LT() - 1);
 
   /* Calculate (-length * ||mean|| ^ 2) for each frame */
-  vector<float> lm2(num_node - 1);
+  vector<float> lm2(num_node);
   for (int t = 0; t < num_leaf; ++t) {
     lm2[t] = -inner_product(feat.Data()[t].begin(), feat.Data()[t].end(),
                             feat.Data()[t].begin(), 0.0f);
@@ -222,6 +222,7 @@ void SegTree::ConstructTree(const DenseFeature& feat) {/*{{{*/
       heap.update(right_hand);
     }
   }
+  heap.clear();
   UpdateLossStat();
 
 }/*}}}*/
