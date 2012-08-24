@@ -298,7 +298,7 @@ float SegTree::MergeLoss(int seg_idx) const {/*{{{*/
 
 void SegTree::GetBasicSeg(vector<int>* index, float threshold) {/*{{{*/
 
-  /* Do a DFS on segtree (BFS mess up the order) */
+  /* Do DFS on segtree (BFS mess up the order) */
   index->clear();
   std::list<int> nodes_to_visit;
   nodes_to_visit.push_front(num_node - 1);
@@ -315,4 +315,27 @@ void SegTree::GetBasicSeg(vector<int>* index, float threshold) {/*{{{*/
   }
 
 }/*}}}*/
+
+void SegTree::GetBasicSeg(vector<int>* index, int nseg) {
+
+  assert(nseg >= 1 && nseg <= num_node);
+
+  deque<int> seg;
+
+  /* Do BFS on segtree until there are nseg */
+  seg.push_back(num_node - 1);
+  while (static_cast<int>(seg.size()) < nseg) {
+    deque<int>::iterator itr = max_element(seg.begin(), seg.end());
+    int first_child = Child(*itr, 0);
+    int second_child = Child(*itr, 1);
+    *itr = second_child;
+    seg.insert(itr, first_child);
+  }
+
+  index->resize(nseg);
+  copy(seg.begin(), seg.end(), index->begin());
+
+}
+
+
 

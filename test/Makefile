@@ -4,7 +4,7 @@ CFLAGS = -Wall -Werror -ansi -pedantic -I /home/ugoc/include/
 MACHINE = $(shell uname -m)
 LDFLAGS = -lfeature \
 					-lsegtree \
-					-lugoc_utility
+					-lutility
 
 LDPATH = -L /home/ugoc/lib
 

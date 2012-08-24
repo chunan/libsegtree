@@ -1,7 +1,7 @@
 #ifndef __SEGTREE_H__
 #define __SEGTREE_H__
 
-#include "ugoc_utility.h"
+#include "utility.h"
 #include "feature.h"
 #include <boost/heap/binomial_heap.hpp>
 
@@ -31,6 +31,7 @@ class SegTree{
     void Load_segtree(string fname);
     void Save_segtree(string fname);
     void GetBasicSeg(vector<int>* index, float threshold);
+    void GetBasicSeg(vector<int>* index, int nseg);
     void ConstructTree(const DenseFeature& feat);
     /* accessors */
     int StartT(int seg_idx) const;

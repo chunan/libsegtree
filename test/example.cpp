@@ -1,4 +1,4 @@
-#include "ugoc_utility.h"
+#include "utility.h"
 #include "feature.h"
 #include "segtree.h"
 
@@ -18,8 +18,18 @@ int main() {
 
   /* Acoustic segments */
   vector<int> as_index;
-  segtree.GetBasicSeg(&as_index, segtree.MergeMean() + 0.5 * segtree.MergeStd());
+  float lambda = segtree.MergeMean() + 0.5 * segtree.MergeStd();
+  segtree.GetBasicSeg(&as_index, lambda);
   cout << "Acoustic Segments:\n";
+  for (unsigned i = 0; i < as_index.size(); ++i) {
+    cout << setw(3) << as_index[i] << ": "
+      << segtree.StartT(as_index[i]) << " - " << segtree.EndT(as_index[i])
+      << endl;
+  }
+
+  /* Get 7 segments */
+  segtree.GetBasicSeg(&as_index, 7);
+  cout << "The 7 Segments:\n";
   for (unsigned i = 0; i < as_index.size(); ++i) {
     cout << setw(3) << as_index[i] << ": "
       << segtree.StartT(as_index[i]) << " - " << segtree.EndT(as_index[i])
