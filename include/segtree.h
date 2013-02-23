@@ -3,23 +3,20 @@
 
 #include "utility.h"
 #include "feature.h"
-#include <boost/heap/binomial_heap.hpp>
-
-using boost::heap::binomial_heap;
-using boost::heap::compare;
 
 struct MergeOp {
 
-  struct GreaterLoss : binary_function <MergeOp, MergeOp, bool> {
-    bool operator() (const MergeOp& a, const MergeOp& b) const {
-      return a.loss > b.loss;
+  struct LessLoss : binary_function <MergeOp*, MergeOp*, bool> {
+    bool operator() (const MergeOp* a, const MergeOp* b) const {
+      return a->loss < b->loss;
     }
   };
 
   int lchild, rchild;
   float loss;
   float lm2; /* (length * ||mean|| ^ 2) of newly created segment */
-  binomial_heap<MergeOp, compare<GreaterLoss> >::handle_type lmerge, rmerge;
+  MergeOp* lmerge;
+  MergeOp* rmerge;
 };
 
 

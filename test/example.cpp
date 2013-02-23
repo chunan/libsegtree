@@ -1,7 +1,10 @@
+#include <iostream>
 #include "utility.h"
 #include "feature.h"
 #include "segtree.h"
 
+using std::cout;
+using std::endl;
 
 int main() {
 

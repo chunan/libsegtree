@@ -1,10 +1,12 @@
 #include <iostream>
-#include <vector>
 #include <cassert>
+#include <vector>
 #include <list>
+#include <deque>
 #include <cmath>
 #include <numeric>
 #include <functional>
+#include <algorithm>
 #include "segtree.h"
 
 const int sizeFloat = sizeof(float);
@@ -123,8 +125,6 @@ void SegTree::Save_segtree(string fname) {/*{{{*/
 
 
 
-typedef binomial_heap<MergeOp, compare<MergeOp::GreaterLoss> > MergeOpHeap_t;
-
 float AddThenSquare(float a, float b) { return (a + b) * (a + b); }
 
 float SubThenSquare(float a, float b) { return (a - b) * (a - b); }
@@ -168,22 +168,23 @@ void SegTree::ConstructTree(const DenseFeature& feat) {/*{{{*/
   }
 
   /* Calculate initial segments and push into heap */
-  MergeOpHeap_t heap;
-  MergeOpHeap_t::handle_type prev_handle, this_handle;
+  list<MergeOp*> heap;
+  MergeOp* prev_op = NULL;
   for (int t = 0; t < non_leaf; ++t) {
-    MergeOp op;
-    op.lchild = t;
-    op.rchild = t + 1;
-    op.lm2 = -0.5 * inner_product(
+    MergeOp* op = new MergeOp;
+    op->lchild = t;
+    op->rchild = t + 1;
+    op->lm2 = -0.5 * inner_product(
         feat.Data()[t].begin(), feat.Data()[t].end(),
         feat.Data()[t + 1].begin(), 0.0f, plus<float>(), AddThenSquare);
-    op.loss = op.lm2 - lm2[t] - lm2[t + 1];
-    op.lmerge = prev_handle;
-    this_handle = heap.push(op);
-    if (prev_handle.node_ != NULL) {
-      (*prev_handle).rmerge = this_handle;
+    op->loss = op->lm2 - lm2[t] - lm2[t + 1];
+    op->lmerge = prev_op;
+    op->rmerge = NULL;
+    heap.push_back(op);
+    if (prev_op != NULL) {
+      prev_op->rmerge = op;
     }
-    prev_handle = this_handle;
+    prev_op= op;
   }
 
   /* Calculate accumulated feature so mean vector can be calculated in O(1) */
@@ -196,33 +197,33 @@ void SegTree::ConstructTree(const DenseFeature& feat) {/*{{{*/
 
   /* HAC */
   for (int t = 0; t < non_leaf; ++t) {
-    const MergeOp& op = heap.top();
-    AssignSeg(op, t, lm2);
-    MergeOpHeap_t::handle_type left_hand = op.lmerge, right_hand = op.rmerge;
-
-    heap.pop();
+    list<MergeOp*>::iterator target;
+    target = min_element(heap.begin(), heap.end(), MergeOp::LessLoss());
+    MergeOp* mop = *target;
+    AssignSeg(*mop, t, lm2);
+    heap.erase(target);
 
     /* Change left neighbor merge */
-    if (left_hand.node_ != NULL) {
-      MergeOp& lop = *left_hand;
+    if (mop->lmerge != NULL) {
+      MergeOp& lop = *(mop->lmerge);
       lop.rchild = num_leaf + t;
-      lop.rmerge = right_hand;
+      lop.rmerge = mop->rmerge;
       lop.lm2 = -CalLm2(accum_feat, StartT(lop.lchild), EndT(lop.rchild));
       lop.loss = lop.lm2 - lm2[lop.lchild] - lm2[lop.rchild];
-      heap.update(left_hand);
     }
 
     /* Change right neighbor merge */
-    if (right_hand.node_ != NULL) {
-      MergeOp& rop = *right_hand;
+    if (mop->rmerge != NULL) {
+      MergeOp& rop = *(mop->rmerge);
       rop.lchild = num_leaf + t;
-      rop.lmerge = left_hand;
+      rop.lmerge = mop->lmerge;
       rop.lm2 = -CalLm2(accum_feat, StartT(rop.lchild), EndT(rop.rchild));
       rop.loss = rop.lm2 - lm2[rop.lchild] - lm2[rop.rchild];
-      heap.update(right_hand);
     }
+
+    /* Delete merged op at this iteration */
+    delete mop;
   }
-  heap.clear();
   UpdateLossStat();
 
 }/*}}}*/
