@@ -1,12 +1,11 @@
 CC = g++
-CFLAGS = -Wall -Werror -ansi -pedantic -I /home/ugoc/include/
+CFLAGS = -Wall -Werror -ansi -pedantic -I ../../libutility/include -I ../../libfeature/include -I ../include
 
 MACHINE = $(shell uname -m)
-LDFLAGS = -lfeature \
-					-lsegtree \
-					-lutility
-
-LDPATH = -L /home/ugoc/lib
+LDFLAGS = -lfeature -lsegtree -lutility
+LDPATH = -L ../../libfeature/lib/${MACHINE} \
+				 -L ../../libutility/lib/${MACHINE} \
+				 -L ../lib/${MACHINE}
 
 .PHONY: all clean
 
