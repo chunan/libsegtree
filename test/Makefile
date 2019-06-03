@@ -4,8 +4,8 @@ CFLAGS = -Wall -Werror -ansi -pedantic -I ../../libutility/include -I ../../libf
 MACHINE = $(shell uname -m)
 LDFLAGS = -lfeature -lsegtree -lutility
 LDPATH = -L ../../libfeature/lib/${MACHINE} \
-				 -L ../../libutility/lib/${MACHINE} \
-				 -L ../lib/${MACHINE}
+         -L ../../libutility/lib/${MACHINE} \
+         -L ../lib/${MACHINE}
 
 .PHONY: all clean
 
